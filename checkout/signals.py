@@ -1,7 +1,7 @@
 # signals are sent to the entire app after a model instance is saved and after it's deleted respectively
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-#will be listening from this
+# will be listening from this
 from .models import OrderLineItem
 
 
