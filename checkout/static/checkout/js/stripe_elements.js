@@ -18,9 +18,67 @@ var style = {
         iconColor: '#dc3545'
     }
 };
-// var card = elements.create('card', {style: style});
-// card.mount('#card-element');
 
 var card = elements.create('card', {style: style});
 card.mount('#card-element');
+
+// Handle realtime validation errors on the card element
+// add listener for change event, for every change, check for errors
+// error message produced by stripe
+card.addEventListener('change', function (event) {
+    var errorDiv = document.getElementById('card-errors');
+    if (event.error) {
+        var html = `
+            <span class="icon" role="alert">
+                <i class="fas fa-times"></i>
+            </span>
+            <span>${event.error.message}</span>
+        `;
+        $(errorDiv).html(html);
+    } else {
+        errorDiv.textContent = '';
+    }
+});
+// ^^^^^^^^^^^^^^
+// stripe has payment intents
+// 1. when user hits checkout, checkout view will call stripe to create payment intent
+// 2. when stripe creates it, a secret identifies it
+// secret will be returned to us and we'll send it to the template as client secret variable
+// 3. on js client side, we call confirm card payment method from stripe.js...
+// using client secret w/c verifies the card number
+
+// handle form submit
+var form = document.getElementById("payment-form");
+
+form.addEventListener("submit", function(event) {
+    event.preventDefault();
+    card.update({'disabled':true});
+    $('#submit-button').attr('disabled', true);
+    // Complete payment when the submit button is clicked
+    stripe.confirmCardPayment(clientSecret, {
+    // provide card to stripe
+        payment_method: {
+            card: card
+        }
+    })
+    // then execute this function
+    .then(function(result) {
+        if (result.error) {
+            var errorDiv = document.getElementById('card-errors');
+            var html = `
+                <span class="icon" role="alert">
+                <i class="fas fa-times"></i>
+                </span>
+                <span>${event.error.message}</span>`;
+            $(errorDiv).html(html);
+            card.update({'disabled':true});
+            $('#submit-button').attr('disabled', false);
+        } else {
+        // The payment succeeded!
+            if (result.paymentIntent.status === 'succeeded'){
+                form.submit();
+            }
+        }    
+    });
+});
 
