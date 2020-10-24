@@ -54,6 +54,9 @@ form.addEventListener("submit", function(event) {
     event.preventDefault();
     card.update({'disabled':true});
     $('#submit-button').attr('disabled', true);
+    // trigger overlay and fadeout form on submit
+    $('#payment-form').fadeToggle(100);
+    $('#loading-overlay').fadeToggle(100);
     // Complete payment when the submit button is clicked
     stripe.confirmCardPayment(clientSecret, {
     // provide card to stripe
@@ -69,9 +72,11 @@ form.addEventListener("submit", function(event) {
                 <span class="icon" role="alert">
                 <i class="fas fa-times"></i>
                 </span>
-                <span>${event.error.message}</span>`;
+                <span>${result.error.message}</span>`;
             $(errorDiv).html(html);
-            card.update({'disabled':true});
+            $('#payment-form').fadeToggle(100);
+            $('#loading-overlay').fadeToggle(100);
+            card.update({'disabled':false});
             $('#submit-button').attr('disabled', false);
         } else {
         // The payment succeeded!
@@ -81,4 +86,5 @@ form.addEventListener("submit", function(event) {
         }    
     });
 });
+
 
